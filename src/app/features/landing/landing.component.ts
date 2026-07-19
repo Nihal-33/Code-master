@@ -80,11 +80,18 @@ export class LandingComponent {
     { question: 'Are the course certificates verifiable?', answer: 'Absolutely. Every certificate is issued with a unique code (e.g. CM-HTML5-XXXX) and recipient record searchable on our platform.', open: false }
   ];
 
+  mobileMenuOpen = false;
+
   toggleFaq(idx: number): void {
     this.faqs[idx].open = !this.faqs[idx].open;
   }
 
+  toggleMobileMenu(): void {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+  }
+
   scrollToSection(sectionId: string): void {
+    this.mobileMenuOpen = false;
     const el = document.getElementById(sectionId);
     if (el) {
       el.scrollIntoView({ behavior: 'smooth', block: 'start' });
