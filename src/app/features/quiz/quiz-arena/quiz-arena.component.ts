@@ -78,20 +78,6 @@ export class QuizArenaComponent implements OnInit {
   }
 
   isQuizLocked(quiz: Quiz): boolean {
-    const courseChapters = this.allChapters.filter(ch => ch.course_id === quiz.course_id);
-    if (courseChapters.length === 0) return true; // Default lock if chapters not loaded yet
-
-    for (const ch of courseChapters) {
-      // 1. Reading must be completed
-      const isRead = this.progressList.some(p => p.chapter_id === ch.id && p.completed);
-      if (!isRead) return true;
-
-      // 2. Practice questions must be attempted/completed
-      const totalQs = this.progressService.getChapterPracticeQuestionsCount(ch.id);
-      const completedQs = this.progressService.getCompletedPracticeQuestions(ch.id).length;
-      if (completedQs < totalQs) return true;
-    }
-
-    return false; // Unlocked if all chapters read and practice completed
+    return false; // All quizzes unlocked as requested
   }
 }
