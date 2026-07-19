@@ -19,6 +19,7 @@ export class DashboardHomeComponent implements OnInit {
   overallProgress = 0;
   totalChaptersCount = 0;
   completedChaptersCount = 0;
+  chapterToCourseMap: { [chapterId: string]: string } = {};
 
   // Static recommendations for quick resuming
   recentChapters = [
@@ -41,6 +42,16 @@ export class DashboardHomeComponent implements OnInit {
     this.courseService.getCourses().subscribe(courses => {
       this.courses = courses;
       this.totalChaptersCount = courses.reduce((acc, c) => acc + c.chapters_count, 0);
+      
+      // Fetch chapters for all courses to build dynamic course mapping
+      courses.forEach(course => {
+        this.courseService.getChapters(course.id).subscribe(chapters => {
+          chapters.forEach(ch => {
+            this.chapterToCourseMap[ch.id] = course.id;
+          });
+          this.calculateOverallProgress();
+        });
+      });
       this.calculateOverallProgress();
     });
 
@@ -59,24 +70,8 @@ export class DashboardHomeComponent implements OnInit {
 
   // Get percentage for a specific course
   getCourseProgress(courseId: string): number {
-    // In our seed chapters we have specific ids. Let's count completed chapters for courseId
-    // In mock mode we can estimate it based on completed count for simplicity
     const completedForCourse = this.progressList.filter(p => {
-      // Find chapter to match course_id
-      // Let's fallback: if course is HTML (starts with 'a1b2'), check chapter IDs matching HTML
-      if (courseId === 'a1b2c3d4-e5f6-7a8b-9c0d-1e2f3a4b5c6d') {
-        return p.completed && (p.chapter_id.startsWith('1111') || p.chapter_id.startsWith('2222') || p.chapter_id.startsWith('html'));
-      }
-      if (courseId === 'b2c3d4e5-f6a7-8b9c-0d1e-2f3a4b5c6d7e') {
-        return p.completed && (p.chapter_id.startsWith('3333') || p.chapter_id.startsWith('css'));
-      }
-      if (courseId === 'c3d4e5f6-a7b8-9c0d-1e2f-3a4b5c6d7e8f') {
-        return p.completed && (p.chapter_id.startsWith('4444') || p.chapter_id.startsWith('js'));
-      }
-      if (courseId === 'd4e5f6a7-b8c9-0d1e-2f3a-4b5c6d7e8f9a') {
-        return p.completed && p.chapter_id.startsWith('angular');
-      }
-      return false;
+      return p.completed && this.chapterToCourseMap[p.chapter_id] === courseId;
     }).length;
 
     const course = this.courses.find(c => c.id === courseId);

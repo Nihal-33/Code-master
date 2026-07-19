@@ -216,4 +216,41 @@ export class ProgressService {
       this.awardXP(50, `Achievement Unlocked: ${achievementName}!`);
     });
   }
+
+  // Save completed practice question to local storage (for both mock and live modes persistence)
+  public completePracticeQuestion(chapterId: string, questionId: string): void {
+    const user = this.authService.currentUserValue;
+    if (!user) return;
+
+    const key = `codemaster_practice_progress_${user.id}`;
+    const saved = localStorage.getItem(key);
+    const progress: { [chapterId: string]: string[] } = saved ? JSON.parse(saved) : {};
+
+    if (!progress[chapterId]) {
+      progress[chapterId] = [];
+    }
+
+    if (!progress[chapterId].includes(questionId)) {
+      progress[chapterId].push(questionId);
+      localStorage.setItem(key, JSON.stringify(progress));
+    }
+  }
+
+  // Get completed practice questions for a chapter
+  public getCompletedPracticeQuestions(chapterId: string): string[] {
+    const user = this.authService.currentUserValue;
+    if (!user) return [];
+
+    const key = `codemaster_practice_progress_${user.id}`;
+    const saved = localStorage.getItem(key);
+    const progress: { [chapterId: string]: string[] } = saved ? JSON.parse(saved) : {};
+
+    return progress[chapterId] || [];
+  }
+
+  // Get total practice questions count defined for a chapter
+  public getChapterPracticeQuestionsCount(chapterId: string): number {
+    if (chapterId === '11111111-1111-1111-1111-111111111111') return 2;
+    return 1;
+  }
 }

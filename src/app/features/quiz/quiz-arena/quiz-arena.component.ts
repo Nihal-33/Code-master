@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { CourseService, Course } from '../../../core/services/course.service';
+import { CourseService, Course, Chapter } from '../../../core/services/course.service';
 import { QuizService, Quiz, QuizAttempt, LeaderboardEntry } from '../../../core/services/quiz.service';
+import { ProgressService, UserProgress } from '../../../core/services/progress.service';
 
 @Component({
   selector: 'app-quiz-arena',
@@ -16,6 +17,8 @@ export class QuizArenaComponent implements OnInit {
   quizzes: Quiz[] = [];
   attempts: QuizAttempt[] = [];
   leaderboard: LeaderboardEntry[] = [];
+  allChapters: Chapter[] = [];
+  progressList: UserProgress[] = [];
 
   // Stats
   totalQuizzesCompleted = 0;
@@ -24,12 +27,25 @@ export class QuizArenaComponent implements OnInit {
 
   constructor(
     private courseService: CourseService,
-    private quizService: QuizService
+    private quizService: QuizService,
+    private progressService: ProgressService
   ) {}
 
   ngOnInit(): void {
     this.courseService.getCourses().subscribe(courses => {
       this.courses = courses;
+      // Load all chapters for all courses to check lock conditions
+      courses.forEach(c => {
+        this.courseService.getChapters(c.id).subscribe(chapters => {
+          // Merge avoiding duplicates
+          const otherChapters = this.allChapters.filter(ch => ch.course_id !== c.id);
+          this.allChapters = [...otherChapters, ...chapters];
+        });
+      });
+    });
+
+    this.progressService.getProgress().subscribe(progress => {
+      this.progressList = progress;
     });
 
     this.quizService.getQuizzes().subscribe(qs => {
@@ -59,5 +75,23 @@ export class QuizArenaComponent implements OnInit {
   getQuizTitle(quizId: string): string {
     const quiz = this.quizzes.find(q => q.id === quizId);
     return quiz ? quiz.title : 'Coding Quiz';
+  }
+
+  isQuizLocked(quiz: Quiz): boolean {
+    const courseChapters = this.allChapters.filter(ch => ch.course_id === quiz.course_id);
+    if (courseChapters.length === 0) return true; // Default lock if chapters not loaded yet
+
+    for (const ch of courseChapters) {
+      // 1. Reading must be completed
+      const isRead = this.progressList.some(p => p.chapter_id === ch.id && p.completed);
+      if (!isRead) return true;
+
+      // 2. Practice questions must be attempted/completed
+      const totalQs = this.progressService.getChapterPracticeQuestionsCount(ch.id);
+      const completedQs = this.progressService.getCompletedPracticeQuestions(ch.id).length;
+      if (completedQs < totalQs) return true;
+    }
+
+    return false; // Unlocked if all chapters read and practice completed
   }
 }

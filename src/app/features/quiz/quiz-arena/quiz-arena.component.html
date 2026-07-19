@@ -48,11 +48,20 @@
           <div class="flex items-center gap-2 text-xs text-text-muted font-medium mb-6">
             <span>⏱ {{ quiz.duration_minutes }} Mins</span>
             <span>•</span>
-            <span>Marks based on accuracy</span>
+            <span *ngIf="isQuizLocked(quiz)" class="text-amber-500/90 font-semibold flex items-center gap-1">
+              ⚠️ Read all chapters & complete practice to unlock
+            </span>
+            <span *ngIf="!isQuizLocked(quiz)" class="text-emerald-400 font-semibold flex items-center gap-1">
+              🚀 Ready to Attempt
+            </span>
           </div>
         </div>
 
-        <a [routerLink]="['/dashboard/quiz', quiz.id]" class="block w-full py-3.5 rounded-xl bg-secondary hover:bg-secondary-light text-center font-bold text-sm text-white shadow-lg shadow-secondary/15 transition-all">
+        <button *ngIf="isQuizLocked(quiz)" disabled class="block w-full py-3.5 rounded-xl bg-slate-800 text-text-muted text-center font-bold text-sm cursor-not-allowed border border-white/5 flex items-center justify-center gap-2">
+          <span>🔒 Locked</span>
+        </button>
+
+        <a *ngIf="!isQuizLocked(quiz)" [routerLink]="['/dashboard/quiz', quiz.id]" class="block w-full py-3.5 rounded-xl bg-secondary hover:bg-secondary-light text-center font-bold text-sm text-white shadow-lg shadow-secondary/15 transition-all">
           Start Quiz
         </a>
       </div>

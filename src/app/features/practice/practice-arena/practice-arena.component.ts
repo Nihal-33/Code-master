@@ -190,9 +190,12 @@ export class PracticeArenaComponent implements OnInit {
     
     this.isCorrect = this.selectedAnswer.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase();
 
-    if (this.isCorrect && !this.xpAwarded) {
-      this.xpAwarded = true;
-      this.progressService.awardXP(20, 'Practice Question Correct');
+    if (this.isCorrect) {
+      this.progressService.completePracticeQuestion(this.selectedChapterId, currentQ.id);
+      if (!this.xpAwarded) {
+        this.xpAwarded = true;
+        this.progressService.awardXP(20, 'Practice Question Correct');
+      }
     }
   }
 
