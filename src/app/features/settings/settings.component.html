@@ -1,0 +1,75 @@
+<div class="max-w-xl mx-auto">
+  <div class="mb-10">
+    <h2 class="text-3xl font-extrabold text-white mb-2">Account Settings</h2>
+    <p class="text-text-muted text-base font-normal">Modify your display configurations and sound effects preferences.</p>
+  </div>
+
+  <!-- Settings Form Card -->
+  <div class="glass-panel p-8 md:p-10 rounded-3xl border border-white/5 bg-gradient-to-br from-surface to-transparent space-y-6">
+    <!-- Success Alert -->
+    <div *ngIf="saveMsg" class="p-4 rounded-xl bg-primary/10 border border-primary/30 text-primary-light text-sm font-bold text-center">
+      {{ saveMsg }}
+    </div>
+
+    <!-- Full Name -->
+    <div>
+      <label class="block text-sm font-semibold text-text mb-2">Display Name</label>
+      <input 
+        type="text" 
+        [(ngModel)]="fullName" 
+        placeholder="Full Name"
+        class="w-full px-4 py-3.5 rounded-xl bg-surface border border-surface-border text-white placeholder-text-muted/40 focus:outline-none focus:border-primary transition-all text-sm font-semibold"
+      />
+    </div>
+
+    <!-- Avatar Seed -->
+    <div>
+      <label class="block text-sm font-semibold text-text mb-2">Avatar Customizer Seed</label>
+      <div class="flex gap-4 items-center">
+        <input 
+          type="text" 
+          [(ngModel)]="avatarSeed" 
+          placeholder="Seed (e.g. Robot)"
+          class="flex-1 px-4 py-3.5 rounded-xl bg-surface border border-surface-border text-white placeholder-text-muted/40 focus:outline-none focus:border-primary transition-all text-sm font-semibold font-mono"
+        />
+        <!-- Live Avatar Preview from Dicebear -->
+        <img [src]="'https://api.dicebear.com/7.x/bottts/svg?seed=' + avatarSeed" alt="Avatar preview" class="h-12 w-12 rounded-xl bg-slate-800 border border-surface-border flex-shrink-0">
+      </div>
+      <span class="text-[10px] text-text-muted mt-2 block leading-relaxed font-semibold uppercase tracking-wider">Type any word to randomly re-render your avatar.</span>
+    </div>
+
+    <!-- Sound Toggle -->
+    <div class="border-t border-surface-border/50 pt-6 flex items-center justify-between">
+      <div>
+        <h4 class="font-bold text-white text-sm">Synthesized Audio Feedback</h4>
+        <p class="text-xs text-text-muted mt-0.5 font-normal">Play synthesized sound tones on correct quiz clicks and scores.</p>
+      </div>
+      
+      <!-- Toggle button -->
+      <button 
+        (click)="soundEnabled = !soundEnabled"
+        [ngClass]="{
+          'bg-primary border-primary text-white': soundEnabled,
+          'bg-surface-border border-transparent text-text-muted': !soundEnabled
+        }"
+        class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none"
+      >
+        <span 
+          [ngClass]="soundEnabled ? 'translate-x-5' : 'translate-x-0'"
+          class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+        ></span>
+      </button>
+    </div>
+
+    <!-- Submit Settings -->
+    <div class="border-t border-surface-border/50 pt-6 mt-8">
+      <button 
+        (click)="saveSettings()"
+        class="w-full py-4 rounded-xl bg-primary hover:bg-primary-light text-center font-bold text-sm text-white shadow-xl shadow-primary/10 transition-all card-hover-effect"
+      >
+        Save Settings Preferences
+      </button>
+    </div>
+
+  </div>
+</div>

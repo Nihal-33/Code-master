@@ -1,0 +1,61 @@
+<div class="mb-8">
+  <h2 class="text-3xl font-extrabold text-white">Interactive Courses</h2>
+  <p class="text-text-muted mt-1 text-base font-normal">Select a technology track below to read modules, solve practice challenges, and unlock certificates.</p>
+</div>
+
+<!-- Courses Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+  <div *ngFor="let course of courses" class="glass-panel rounded-3xl border border-white/5 overflow-hidden flex flex-col justify-between hover:border-primary/50 transition-all duration-300 card-hover-effect">
+    <div>
+      <!-- Course Cover Image -->
+      <div class="h-48 w-full relative overflow-hidden bg-slate-800">
+        <img [src]="course.cover_image" alt="{{ course.title }} Cover" class="h-full w-full object-cover">
+        <div class="absolute inset-0 bg-gradient-to-t from-darkbg via-transparent to-transparent"></div>
+        <div class="absolute top-4 left-4 flex gap-2">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-primary text-white border border-primary/20 shadow-md">
+            {{ course.difficulty }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Course Content -->
+      <div class="p-6 md:p-8">
+        <h3 class="text-2xl font-extrabold text-white mb-3">{{ course.title }}</h3>
+        <p class="text-text-muted text-sm leading-relaxed mb-6">{{ course.description }}</p>
+
+        <!-- Progress bar -->
+        <div class="mb-6">
+          <div class="flex justify-between text-xs font-bold text-text-muted mb-2">
+            <span>Syllabus Completion</span>
+            <span>{{ getCourseProgress(course.id) }}%</span>
+          </div>
+          <div class="w-full bg-surface-border h-2.5 rounded-full overflow-hidden">
+            <div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-300" [style.width.%]="getCourseProgress(course.id)"></div>
+          </div>
+        </div>
+
+        <!-- Chapters / Questions Count -->
+        <div class="grid grid-cols-3 gap-2 border-t border-surface-border/60 pt-5 text-center text-xs font-bold text-text-muted">
+          <div>
+            <div class="text-base text-white font-extrabold">{{ course.chapters_count }}</div>
+            <div class="uppercase text-[9px] mt-0.5">Chapters</div>
+          </div>
+          <div>
+            <div class="text-base text-white font-extrabold">{{ course.questions_count }}</div>
+            <div class="uppercase text-[9px] mt-0.5">Practice Qs</div>
+          </div>
+          <div>
+            <div class="text-base text-white font-extrabold">{{ course.quizzes_count }}</div>
+            <div class="uppercase text-[9px] mt-0.5">Quizzes</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="p-6 md:p-8 pt-0">
+      <a [routerLink]="['/dashboard/courses', course.slug]" class="block w-full py-4 rounded-xl bg-primary hover:bg-primary-light text-center font-bold text-sm tracking-wide text-white transition-all shadow-xl shadow-primary/10">
+        Open Syllabus Syllabus
+      </a>
+    </div>
+  </div>
+</div>

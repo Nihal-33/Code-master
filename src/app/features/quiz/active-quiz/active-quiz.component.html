@@ -1,0 +1,164 @@
+<div class="max-w-3xl mx-auto">
+  
+  <!-- ACTIVE QUIZ SCREEN -->
+  <div *ngIf="!quizCompleted; else resultsScreen" class="glass-panel p-8 rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden">
+    
+    <!-- Top Header details -->
+    <div class="flex items-center justify-between pb-4 border-b border-surface-border mb-8">
+      <div>
+        <h2 class="text-xl font-extrabold text-white">{{ quiz?.title }}</h2>
+        <span class="text-xs text-text-muted mt-1 font-semibold">Multiple Choice Evaluation</span>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Sound Effect Toggle -->
+        <button 
+          (click)="toggleSound()"
+          class="p-2.5 rounded-xl border border-surface-border bg-surface text-text-muted hover:text-white transition-all"
+          [title]="soundEnabled ? 'Mute Sounds' : 'Unmute Sounds'"
+        >
+          {{ soundEnabled ? '🔊' : '🔇' }}
+        </button>
+
+        <!-- Timer -->
+        <div class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 font-mono font-bold text-sm tracking-wide">
+          <span>⏱</span> {{ formattedTime }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Question Count Indicator -->
+    <div class="w-full bg-surface-border h-1.5 rounded-full mb-8 overflow-hidden">
+      <div class="bg-gradient-to-r from-primary to-secondary h-full rounded-full transition-all duration-300" [style.width.%]="((currentIdx + 1) / questions.length) * 100"></div>
+    </div>
+
+    <!-- Question content -->
+    <div *ngIf="questions.length > 0; else loadingQuestions">
+      <span class="text-xs font-bold text-text-muted uppercase tracking-wider mb-2 block">Question {{ currentIdx + 1 }} of {{ questions.length }}</span>
+      <h3 class="text-xl md:text-2xl font-bold text-white mb-8 leading-relaxed whitespace-pre-wrap">
+        {{ questions[currentIdx].question }}
+      </h3>
+
+      <!-- Options List -->
+      <div class="space-y-4">
+        <button 
+          *ngFor="let opt of questions[currentIdx].options"
+          (click)="selectOption(opt)"
+          [ngClass]="{
+            'border-primary bg-primary/5 text-primary-light': isOptionSelected(opt),
+            'border-surface-border bg-surface/40 text-text-muted hover:text-white hover:bg-surface-light': !isOptionSelected(opt)
+          }"
+          class="w-full text-left px-5 py-4 rounded-xl border text-sm font-semibold transition-all flex items-center justify-between"
+        >
+          <span>{{ opt }}</span>
+          <span *ngIf="isOptionSelected(opt)" class="text-primary-light">⬤</span>
+        </button>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="flex items-center justify-between border-t border-surface-border/50 pt-6 mt-10">
+        <button 
+          [disabled]="currentIdx === 0" 
+          (click)="goPrev()"
+          class="px-5 py-2.5 rounded-xl border border-surface-border text-xs font-bold text-text-muted hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          Previous
+        </button>
+
+        <button 
+          *ngIf="currentIdx < questions.length - 1"
+          (click)="goNext()"
+          class="px-6 py-3 rounded-xl bg-surface-border hover:bg-surface-light text-white font-bold text-sm transition-all"
+        >
+          Next Question
+        </button>
+
+        <button 
+          *ngIf="currentIdx === questions.length - 1"
+          (click)="submitQuiz()"
+          class="px-6 py-3 rounded-xl bg-secondary hover:bg-secondary-light text-white font-bold text-sm transition-all shadow-lg shadow-secondary/20"
+        >
+          Submit Quiz
+        </button>
+      </div>
+    </div>
+
+    <!-- Fallback if empty -->
+    <ng-template #loadingQuestions>
+      <div class="text-center py-12 text-text-muted">Loading arena questions...</div>
+    </ng-template>
+  </div>
+
+  <!-- RESULTS SCREEN -->
+  <ng-template #resultsScreen>
+    <div class="space-y-8">
+      
+      <!-- Primary stats card -->
+      <div class="glass-panel p-8 md:p-10 rounded-3xl border border-white/10 text-center relative overflow-hidden bg-gradient-to-tr from-surface via-darkbg/40 to-transparent">
+        <div class="absolute -top-32 -left-32 w-64 h-64 bg-secondary/5 rounded-full blur-3xl"></div>
+        <span class="text-5xl md:text-6xl mb-6 block">🏆</span>
+        
+        <h2 class="text-3xl md:text-4xl font-extrabold text-white mb-2">Quiz Complete!</h2>
+        <p class="text-text-muted text-base">You completed the timed challenge. Here is your scorecard.</p>
+
+        <!-- Accuracy indicator circles -->
+        <div class="my-10 flex flex-col items-center">
+          <div class="h-28 w-28 rounded-full border-4 flex items-center justify-center text-3xl font-extrabold text-white"
+            [ngClass]="{
+              'border-emerald-500 bg-emerald-500/10': accuracy >= 70,
+              'border-red-500 bg-red-500/10': accuracy < 70
+            }"
+          >
+            {{ accuracy }}%
+          </div>
+          <span class="text-xs uppercase text-text-muted mt-3 font-bold tracking-wider">Overall Accuracy</span>
+        </div>
+
+        <div class="grid grid-cols-3 gap-4 max-w-md mx-auto border-t border-surface-border pt-8 mb-6">
+          <div>
+            <div class="text-2xl font-extrabold text-white">{{ score }}</div>
+            <div class="text-[10px] uppercase text-text-muted mt-0.5">Correct Answers</div>
+          </div>
+          <div>
+            <div class="text-2xl font-extrabold text-white">{{ questions.length - score }}</div>
+            <div class="text-[10px] uppercase text-text-muted mt-0.5">Incorrect Answers</div>
+          </div>
+          <div>
+            <div class="text-2xl font-extrabold text-secondary-light">+{{ xpGained }} XP</div>
+            <div class="text-[10px] uppercase text-text-muted mt-0.5">XP Gained</div>
+          </div>
+        </div>
+
+        <div class="flex justify-center gap-4 mt-10">
+          <a routerLink="/dashboard/quiz" class="px-6 py-3 rounded-xl bg-surface-border hover:bg-surface-light text-sm font-semibold text-white transition-all">
+            Return to Arena
+          </a>
+          <button (click)="loadQuiz(quiz!.id); quizCompleted = false; currentIdx = 0; selectedAnswers = {}" class="px-6 py-3 rounded-xl bg-secondary hover:bg-secondary-light text-sm font-bold text-white transition-all shadow-lg shadow-secondary/10">
+            Re-attempt Quiz
+          </button>
+        </div>
+      </div>
+
+      <!-- Recommendation / Study Guideline Panel -->
+      <div *ngIf="recommendedChapters.length > 0" class="glass-panel p-6 md:p-8 rounded-3xl border border-white/5">
+        <div class="flex items-center gap-3 mb-4">
+          <span class="text-xl">💡</span>
+          <h3 class="text-lg font-bold text-white">Recommended Chapters to Review</h3>
+        </div>
+        <p class="text-xs text-text-muted mb-6">Based on your weak topics in this quiz, we recommend reviewing these digital syllabus chapters:</p>
+        
+        <div class="space-y-3">
+          <a 
+            *ngFor="let ch of recommendedChapters" 
+            [routerLink]="['/dashboard/ebook', ch.id]"
+            class="flex items-center justify-between p-4 rounded-xl bg-surface/50 border border-surface-border/50 hover:border-primary/45 hover:bg-surface/80 transition-all group"
+          >
+            <span class="text-sm font-semibold text-white group-hover:text-primary-light transition-colors">{{ ch.title }}</span>
+            <span class="text-xs text-primary group-hover:text-primary-light font-bold">Study Chapter →</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </ng-template>
+</div>

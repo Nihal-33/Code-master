@@ -1,0 +1,43 @@
+<div class="mb-10">
+  <h2 class="text-3xl font-extrabold text-white mb-2">Coding Challenge Arena</h2>
+  <p class="text-text-muted text-base font-normal">Test your actual scripting and structure abilities. Write code directly in the browser and simulate validation suites.</p>
+</div>
+
+<!-- Challenges Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div *ngFor="let chal of challenges" class="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col justify-between hover:border-accent/40 transition-all duration-300 card-hover-effect">
+    <div>
+      <div class="flex items-center justify-between mb-4">
+        <!-- Category Badge -->
+        <span 
+          [ngClass]="{
+            'bg-orange-500/10 border-orange-500/20 text-orange-400': chal.category === 'HTML',
+            'bg-blue-500/10 border-blue-500/20 text-blue-400': chal.category === 'CSS',
+            'bg-yellow-500/10 border-yellow-500/20 text-yellow-400': chal.category === 'JavaScript',
+            'bg-red-500/10 border-red-500/20 text-red-400': chal.category === 'AngularJS'
+          }"
+          class="px-2.5 py-0.5 rounded text-[10px] font-bold border uppercase"
+        >
+          {{ chal.category }}
+        </span>
+
+        <!-- Difficulty Badge -->
+        <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-text-muted text-[10px] font-bold uppercase">
+          {{ chal.difficulty }}
+        </span>
+      </div>
+
+      <h4 class="font-extrabold text-white text-lg mb-2 truncate">{{ chal.title }}</h4>
+      <p class="text-text-muted text-xs leading-relaxed mb-6 line-clamp-3">{{ chal.description }}</p>
+    </div>
+
+    <!-- XP Stats + Button link -->
+    <div class="border-t border-surface-border/50 pt-4 flex items-center justify-between">
+      <span class="text-xs text-accent font-extrabold">+{{ chal.xpReward }} XP Reward</span>
+      
+      <a [routerLink]="['/dashboard/challenges', chal.id]" class="px-4 py-2 rounded-xl bg-accent hover:bg-accent-light font-bold text-xs text-white transition-all shadow-md shadow-accent/15">
+        Open Editor
+      </a>
+    </div>
+  </div>
+</div>

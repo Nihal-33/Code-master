@@ -1,0 +1,110 @@
+<!-- Stats Widgets -->
+<div class="mb-10">
+  <h2 class="text-3xl font-extrabold text-white mb-2">Quiz Arena</h2>
+  <p class="text-text-muted text-base font-normal">Challenge yourself in timed evaluations. Unlock achievements and scale the leaderboard.</p>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
+  <!-- Quizzes Done -->
+  <div class="glass-panel p-6 rounded-2xl border border-white/5 flex items-center gap-5">
+    <div class="h-12 w-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center text-primary text-xl">✅</div>
+    <div>
+      <div class="text-xs uppercase text-text-muted font-bold tracking-wider">Completed Quizzes</div>
+      <div class="text-3xl font-extrabold text-white mt-1">{{ totalQuizzesCompleted }} Quizzes</div>
+    </div>
+  </div>
+
+  <!-- Average Accuracy -->
+  <div class="glass-panel p-6 rounded-2xl border border-white/5 flex items-center gap-5">
+    <div class="h-12 w-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 text-xl">🎯</div>
+    <div>
+      <div class="text-xs uppercase text-text-muted font-bold tracking-wider">Average Accuracy</div>
+      <div class="text-3xl font-extrabold text-white mt-1">{{ averageAccuracy }}%</div>
+    </div>
+  </div>
+
+  <!-- Quiz XP Gained -->
+  <div class="glass-panel p-6 rounded-2xl border border-white/5 flex items-center gap-5">
+    <div class="h-12 w-12 rounded-xl bg-secondary/10 border border-secondary/20 flex items-center justify-center text-secondary text-xl">⚡</div>
+    <div>
+      <div class="text-xs uppercase text-text-muted font-bold tracking-wider">Quiz XP Earned</div>
+      <div class="text-3xl font-extrabold text-white mt-1">+{{ totalXPGained }} XP</div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+  <!-- Available Quizzes Section -->
+  <div class="lg:col-span-8 space-y-6">
+    <h3 class="text-xl font-bold text-white mb-6">Available Quizzes</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div *ngFor="let quiz of quizzes" class="glass-panel p-6 rounded-2xl border border-white/5 flex flex-col justify-between hover:border-secondary/40 transition-all duration-300 card-hover-effect">
+        <div>
+          <span class="px-2 py-0.5 rounded bg-white/5 text-[9px] text-text-muted border border-white/10 font-bold uppercase">
+            {{ getCourseTitle(quiz.course_id) }}
+          </span>
+          <h4 class="font-extrabold text-white text-lg mt-3 mb-2">{{ quiz.title }}</h4>
+          <div class="flex items-center gap-2 text-xs text-text-muted font-medium mb-6">
+            <span>⏱ {{ quiz.duration_minutes }} Mins</span>
+            <span>•</span>
+            <span>Marks based on accuracy</span>
+          </div>
+        </div>
+
+        <a [routerLink]="['/dashboard/quiz', quiz.id]" class="block w-full py-3.5 rounded-xl bg-secondary hover:bg-secondary-light text-center font-bold text-sm text-white shadow-lg shadow-secondary/15 transition-all">
+          Start Quiz
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaderboards & History -->
+  <div class="lg:col-span-4 space-y-8">
+    
+    <!-- Leaderboards -->
+    <div>
+      <h3 class="text-xl font-bold text-white mb-6">Arena Leaderboard</h3>
+      <div class="glass-panel p-5 rounded-2xl border border-white/5 space-y-4">
+        <div *ngFor="let entry of leaderboard; let i = index" class="flex items-center justify-between p-3 rounded-xl bg-surface/50 border border-surface-border/50">
+          <div class="flex items-center gap-3">
+            <span class="text-sm font-extrabold" [ngClass]="{
+              'text-yellow-400': i === 0,
+              'text-slate-300': i === 1,
+              'text-amber-600': i === 2,
+              'text-text-muted': i > 2
+            }">#{{ i + 1 }}</span>
+            <div>
+              <div class="text-sm font-bold text-white">{{ entry.full_name }}</div>
+              <div class="text-[9px] text-text-muted font-semibold uppercase tracking-wider">{{ entry.level }}</div>
+            </div>
+          </div>
+          <span class="text-xs font-extrabold text-secondary-light">{{ entry.xp }} XP</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Attempt History -->
+    <div>
+      <h3 class="text-xl font-bold text-white mb-6">Attempt History</h3>
+      <div class="glass-panel p-5 rounded-2xl border border-white/5 space-y-4 max-h-[300px] overflow-y-auto">
+        <div *ngIf="attempts.length === 0" class="text-center text-text-muted text-xs py-4">No quizzes completed yet.</div>
+        
+        <div *ngFor="let att of attempts" class="p-3 rounded-xl bg-surface/40 border border-surface-border/40 text-xs">
+          <div class="flex justify-between items-center mb-1.5">
+            <span class="font-bold text-white truncate max-w-[150px]">{{ getQuizTitle(att.quiz_id) }}</span>
+            <span class="font-extrabold" [ngClass]="{
+              'text-emerald-400': att.accuracy >= 70,
+              'text-red-400': att.accuracy < 70
+            }">{{ att.accuracy }}%</span>
+          </div>
+          <div class="flex justify-between text-[10px] text-text-muted">
+            <span>Score: {{ att.score }} correct</span>
+            <span class="text-secondary-light font-bold">+{{ att.xp_gained }} XP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

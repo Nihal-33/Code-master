@@ -1,0 +1,199 @@
+<div class="h-[calc(100vh-120px)] flex overflow-hidden border border-surface-border rounded-3xl relative bg-surface/10">
+  
+  <!-- LEFT COLUMN: Table of Contents (TOC) -->
+  <aside 
+    *ngIf="tocOpen"
+    class="w-64 border-r border-surface-border flex flex-col justify-between flex-shrink-0 bg-surface/50 backdrop-blur-md"
+  >
+    <div class="p-5 border-b border-surface-border flex items-center justify-between">
+      <h3 class="font-extrabold text-sm text-white uppercase tracking-wider">Chapters</h3>
+      <button (click)="tocOpen = false" class="text-text-muted hover:text-white" title="Collapse Chapters">◀</button>
+    </div>
+    
+    <div class="flex-1 overflow-y-auto p-3 space-y-1">
+      <button 
+        *ngFor="let ch of chapters" 
+        (click)="loadChapter(ch.id)"
+        [ngClass]="{
+          'bg-primary/10 text-primary border-primary/20': ch.id === currentChapter?.id,
+          'text-text-muted hover:text-white hover:bg-surface-light border-transparent': ch.id !== currentChapter?.id
+        }"
+        class="w-full text-left px-4 py-3 rounded-xl border text-sm font-semibold transition-all flex items-center justify-between"
+      >
+        <span class="truncate pr-2">{{ ch.order_index }}. {{ ch.title }}</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- CENTER COLUMN: Digital E-Book Reader -->
+  <div class="flex-1 flex flex-col min-w-0 bg-darkbg/40 relative">
+    
+    <!-- Top toolbar controls -->
+    <div class="px-6 h-14 border-b border-surface-border flex items-center justify-between flex-shrink-0 bg-surface/30 backdrop-blur-md">
+      <!-- Left controls: TOC toggle + Search -->
+      <div class="flex items-center gap-3 flex-1 min-w-0 mr-4">
+        <button *ngIf="!tocOpen" (click)="tocOpen = true" class="p-2 rounded-lg bg-surface border border-surface-border text-text-muted hover:text-white" title="Expand Chapters">
+          📖
+        </button>
+
+        <div class="relative max-w-xs w-full hidden sm:block">
+          <input 
+            type="text" 
+            [(ngModel)]="searchQuery" 
+            (ngModelChange)="onSearchChange()"
+            placeholder="Search in chapter..."
+            class="w-full pl-9 pr-4 py-1.5 rounded-lg bg-surface border border-surface-border text-xs text-white placeholder-text-muted/50 focus:outline-none focus:border-primary transition-all"
+          />
+          <span class="absolute left-3 top-2 text-text-muted text-xs">🔍</span>
+        </div>
+      </div>
+
+      <!-- Right controls: Font adjust, Highlighter, Bookmark, Fullscreen, Notes toggle -->
+      <div class="flex items-center gap-2">
+        <!-- Text Selection Highlighter Button -->
+        <button 
+          (click)="highlightSelection()" 
+          class="p-2 rounded-lg bg-surface border border-surface-border text-text-muted hover:text-white" 
+          title="Highlight Selected Text"
+        >
+          ✒️
+        </button>
+
+        <!-- Font sizing -->
+        <div class="flex items-center border border-surface-border rounded-lg bg-surface overflow-hidden">
+          <button (click)="adjustFont('minus')" class="px-2.5 py-1 text-xs text-text-muted hover:text-white hover:bg-surface-light border-r border-surface-border font-bold">A-</button>
+          <button (click)="adjustFont('plus')" class="px-2.5 py-1 text-xs text-text-muted hover:text-white hover:bg-surface-light font-bold">A+</button>
+        </div>
+
+        <!-- Bookmark Chapter -->
+        <button 
+          (click)="toggleBookmark()" 
+          [ngClass]="{
+            'text-primary bg-primary/10 border-primary/20': isBookmarked,
+            'text-text-muted bg-surface border-surface-border': !isBookmarked
+          }"
+          class="p-2 rounded-lg border transition-all" 
+          title="Bookmark Chapter"
+        >
+          📌
+        </button>
+
+        <!-- Fullscreen Mode -->
+        <button 
+          (click)="toggleFullscreen()" 
+          class="p-2 rounded-lg bg-surface border border-surface-border text-text-muted hover:text-white" 
+          title="Toggle Fullscreen"
+        >
+          {{ isFullscreen ? '🗗' : '🗖' }}
+        </button>
+
+        <!-- Notes Toggle -->
+        <button *ngIf="!notesOpen" (click)="notesOpen = true" class="p-2 rounded-lg bg-surface border border-surface-border text-text-muted hover:text-white" title="Expand Study Notes">
+          📝
+        </button>
+      </div>
+    </div>
+
+    <!-- Active Search Bar for mobile only -->
+    <div class="px-6 py-2 border-b border-surface-border sm:hidden bg-surface/20 flex items-center">
+      <input 
+        type="text" 
+        [(ngModel)]="searchQuery" 
+        (ngModelChange)="onSearchChange()"
+        placeholder="Search in chapter..."
+        class="w-full px-3 py-1.5 rounded-lg bg-surface border border-surface-border text-xs text-white"
+      />
+    </div>
+
+    <!-- Markdown Reader Container -->
+    <div class="flex-1 overflow-y-auto px-8 py-10 relative">
+      <div 
+        #readerContent
+        class="max-w-2xl mx-auto select-text selection:bg-yellow-500/30"
+        [style.fontSize.px]="fontSize"
+        [innerHTML]="parsedContent"
+      >
+      </div>
+    </div>
+
+    <!-- Prev / Next Footer Pagination -->
+    <div class="px-8 h-16 border-t border-surface-border flex items-center justify-between flex-shrink-0 bg-surface/30 backdrop-blur-md">
+      <button 
+        [disabled]="!hasPrev" 
+        (click)="goPrev()"
+        class="flex items-center gap-2 text-sm font-semibold text-text-muted hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+      >
+        ← Previous Chapter
+      </button>
+      
+      <span class="text-xs text-text-muted font-bold" *ngIf="currentChapter">
+        CHAPTER {{ currentChapter.order_index }} OF {{ chapters.length }}
+      </span>
+
+      <button 
+        [disabled]="!hasNext" 
+        (click)="goNext()"
+        class="flex items-center gap-2 text-sm font-semibold text-text-muted hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+      >
+        Next Chapter →
+      </button>
+    </div>
+  </div>
+
+  <!-- RIGHT COLUMN: Personal Study Notes -->
+  <aside 
+    *ngIf="notesOpen"
+    class="w-80 border-l border-surface-border flex flex-col justify-between flex-shrink-0 bg-surface/50 backdrop-blur-md"
+  >
+    <div class="p-5 border-b border-surface-border flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="text-base">📝</span>
+        <h3 class="font-extrabold text-sm text-white uppercase tracking-wider">Study Notes</h3>
+      </div>
+      <button (click)="notesOpen = false" class="text-text-muted hover:text-white" title="Collapse Notes">▶</button>
+    </div>
+
+    <!-- Notes Text Area -->
+    <div class="flex-1 p-5 flex flex-col gap-4">
+      <div class="flex-1 relative">
+        <textarea 
+          [(ngModel)]="chapterNote"
+          placeholder="Take custom notes on this chapter. Write guidelines, code summaries, or details to review later..."
+          class="w-full h-full p-4 rounded-2xl bg-surface border border-surface-border text-white text-sm placeholder-text-muted/40 focus:outline-none focus:border-primary transition-all resize-none leading-relaxed"
+        ></textarea>
+      </div>
+
+      <!-- Action feedback alert -->
+      <div *ngIf="noteSavedMsg" class="p-3 text-xs font-bold text-center rounded-xl bg-primary/10 border border-primary/20 text-primary-light">
+        {{ noteSavedMsg }}
+      </div>
+    </div>
+
+    <!-- Notes Bottom Actions bar -->
+    <div class="p-5 border-t border-surface-border grid grid-cols-3 gap-2 bg-surface/30">
+      <button 
+        (click)="saveNote()"
+        class="px-3 py-2.5 rounded-lg bg-primary hover:bg-primary-light text-white font-bold text-xs shadow-md transition-all text-center"
+        title="Save note"
+      >
+        Save
+      </button>
+      <button 
+        (click)="exportNote()"
+        [disabled]="!chapterNote"
+        class="px-3 py-2.5 rounded-lg bg-surface-border hover:bg-surface-light text-white font-bold text-xs disabled:opacity-30 disabled:cursor-not-allowed transition-all text-center"
+        title="Export note as PDF"
+      >
+        PDF
+      </button>
+      <button 
+        (click)="deleteNote()"
+        [disabled]="!chapterNote"
+        class="px-3 py-2.5 rounded-lg bg-red-500/10 border border-red-500/20 hover:bg-red-500/25 text-red-300 font-bold text-xs disabled:opacity-30 disabled:cursor-not-allowed transition-all text-center"
+        title="Delete note"
+      >
+        Delete
+      </button>
+    </div>
+  </aside>
+</div>

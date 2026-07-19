@@ -1,0 +1,64 @@
+<div class="max-w-4xl mx-auto space-y-10">
+  
+  <!-- Profile Summary Card -->
+  <div *ngIf="user" class="glass-panel p-8 md:p-10 rounded-3xl border border-white/10 relative overflow-hidden bg-gradient-to-br from-surface via-darkbg/40 to-transparent">
+    <div class="absolute -top-32 -left-32 w-64 h-64 bg-primary/5 rounded-full blur-3xl"></div>
+    
+    <div class="flex flex-col md:flex-row items-center gap-8 relative z-10 text-center md:text-left">
+      <!-- Big Avatar -->
+      <img [src]="user.avatar_url || 'https://api.dicebear.com/7.x/bottts/svg?seed=Guest'" alt="Avatar" class="h-28 w-28 rounded-3xl bg-slate-800 border-2 border-primary shadow-xl shadow-primary/10">
+
+      <div class="space-y-3">
+        <h2 class="text-3xl font-extrabold text-white">{{ user.full_name }}</h2>
+        
+        <div class="flex flex-wrap items-center justify-center md:justify-start gap-3">
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-primary/10 border border-primary/20 text-primary-light">
+            Rank Rank: {{ user.level }}
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/10 border border-orange-500/20 text-orange-400">
+            🔥 {{ user.current_streak }} Day Streak
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-semibold bg-secondary/10 border border-secondary/20 text-secondary-light">
+            ✨ {{ user.xp }} XP Accumulated
+          </span>
+        </div>
+        
+        <p class="text-xs text-text-muted mt-2">Scholar Account Active • Joined CodeMaster in July 2026</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Achievements Cabinet -->
+  <div>
+    <h3 class="text-xl font-bold text-white mb-6">Achievements Cabinet</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div 
+        *ngFor="let badge of badges"
+        [ngClass]="{
+          'border-white/10 bg-gradient-to-tr from-surface to-white/5 opacity-100': isBadgeUnlocked(badge.id),
+          'border-white/5 bg-transparent opacity-40 select-none': !isBadgeUnlocked(badge.id)
+        }"
+        class="glass-panel p-5 rounded-2xl border flex items-center gap-5 transition-all duration-300"
+      >
+        <!-- Badge icon bubble -->
+        <div 
+          [ngClass]="badge.bgGrad"
+          class="h-16 w-16 rounded-2xl bg-gradient-to-tr flex items-center justify-center text-3xl shadow-lg flex-shrink-0"
+        >
+          {{ isBadgeUnlocked(badge.id) ? badge.icon : '🔒' }}
+        </div>
+
+        <div>
+          <h4 class="font-extrabold text-white text-base flex items-center gap-2">
+            <span>{{ badge.name }}</span>
+            <span *ngIf="isBadgeUnlocked(badge.id)" class="text-[9px] text-emerald-400 font-bold bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded">Unlocked</span>
+            <span *ngIf="!isBadgeUnlocked(badge.id)" class="text-[9px] text-text-muted font-bold bg-white/5 border border-white/10 px-1.5 py-0.5 rounded">Locked</span>
+          </h4>
+          <p class="text-text-muted text-xs leading-relaxed mt-1 font-medium">{{ badge.description }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
