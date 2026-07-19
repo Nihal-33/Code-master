@@ -1,0 +1,8 @@
+{
+  "buildCommand": "npm run build -- --configuration production",
+  "outputDirectory": "dist/codemaster-ebook-arena/browser",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
