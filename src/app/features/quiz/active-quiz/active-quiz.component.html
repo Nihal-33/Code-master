@@ -43,16 +43,31 @@
       <div class="space-y-4">
         <button 
           *ngFor="let opt of questions[currentIdx].options"
+          [disabled]="hasAnswered(questions[currentIdx].id)"
           (click)="selectOption(opt)"
           [ngClass]="{
-            'border-primary bg-primary/5 text-primary-light': isOptionSelected(opt),
-            'border-surface-border bg-surface/40 text-text-muted hover:text-white hover:bg-surface-light': !isOptionSelected(opt)
+            'border-emerald-500 bg-emerald-500/10 text-emerald-400': hasAnswered(questions[currentIdx].id) && opt.trim().toLowerCase() === questions[currentIdx].correct_answer.trim().toLowerCase(),
+            'border-red-500 bg-red-500/10 text-red-400': hasAnswered(questions[currentIdx].id) && isOptionSelected(opt) && opt.trim().toLowerCase() !== questions[currentIdx].correct_answer.trim().toLowerCase(),
+            'border-primary bg-primary/5 text-primary-light': !hasAnswered(questions[currentIdx].id) && isOptionSelected(opt),
+            'border-surface-border bg-surface/40 text-text-muted opacity-60': hasAnswered(questions[currentIdx].id) && !isOptionSelected(opt) && opt.trim().toLowerCase() !== questions[currentIdx].correct_answer.trim().toLowerCase(),
+            'border-surface-border bg-surface/40 text-text-muted hover:text-white hover:bg-surface-light': !hasAnswered(questions[currentIdx].id) && !isOptionSelected(opt)
           }"
           class="w-full text-left px-5 py-4 rounded-xl border text-sm font-semibold transition-all flex items-center justify-between"
         >
           <span>{{ opt }}</span>
-          <span *ngIf="isOptionSelected(opt)" class="text-primary-light">⬤</span>
+          <span *ngIf="hasAnswered(questions[currentIdx].id) && opt.trim().toLowerCase() === questions[currentIdx].correct_answer.trim().toLowerCase()" class="text-emerald-400 font-bold">✓ Correct Option</span>
+          <span *ngIf="hasAnswered(questions[currentIdx].id) && isOptionSelected(opt) && opt.trim().toLowerCase() !== questions[currentIdx].correct_answer.trim().toLowerCase()" class="text-red-400 font-bold">✗ Your Selection</span>
+          <span *ngIf="!hasAnswered(questions[currentIdx].id) && isOptionSelected(opt)" class="text-primary-light">⬤</span>
         </button>
+      </div>
+
+      <!-- Explanation & Correct Option Review -->
+      <div *ngIf="hasAnswered(questions[currentIdx].id)" class="mt-6 p-5 rounded-2xl bg-surface-light/40 border border-surface-border animate-fade-in text-sm">
+        <div class="font-bold text-white mb-2">Topic Explanation:</div>
+        <p class="text-text-muted leading-relaxed mb-3">{{ questions[currentIdx].explanation }}</p>
+        <div class="text-xs text-emerald-400 font-semibold">
+          💡 Correct Answer: <span class="underline font-bold">{{ questions[currentIdx].correct_answer }}</span>
+        </div>
       </div>
 
       <!-- Footer Buttons -->
@@ -73,13 +88,19 @@
           Next Question
         </button>
 
-        <button 
-          *ngIf="currentIdx === questions.length - 1"
-          (click)="submitQuiz()"
-          class="px-6 py-3 rounded-xl bg-secondary hover:bg-secondary-light text-white font-bold text-sm transition-all shadow-lg shadow-secondary/20"
-        >
-          Submit Quiz
-        </button>
+        <div class="flex flex-col items-end gap-1.5" *ngIf="currentIdx === questions.length - 1">
+          <!-- Required Questions warning -->
+          <span *ngIf="answeredCount < questions.length" class="text-[11px] text-amber-400 font-bold tracking-wide animate-pulse">
+            ⚠️ Attempt all questions ({{ answeredCount }}/{{ questions.length }})
+          </span>
+          <button 
+            [disabled]="answeredCount < questions.length"
+            (click)="submitQuiz()"
+            class="px-6 py-3 rounded-xl bg-secondary hover:bg-secondary-light text-white font-bold text-sm transition-all shadow-lg shadow-secondary/20 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Submit Quiz
+          </button>
+        </div>
       </div>
     </div>
 

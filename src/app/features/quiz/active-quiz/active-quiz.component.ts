@@ -95,13 +95,32 @@ export class ActiveQuizComponent implements OnInit, OnDestroy {
   selectOption(opt: string): void {
     if (this.quizCompleted) return;
     const currentQ = this.questions[this.currentIdx];
+    
+    // Prevent changing answer once selected
+    if (this.selectedAnswers[currentQ.id]) return;
+
     this.selectedAnswers[currentQ.id] = opt;
-    this.playTone(392, 'sine', 0.05); // Subtle click feedback
+    
+    // Instant auditory correctness feedback
+    const isCorrect = opt.trim().toLowerCase() === currentQ.correct_answer.trim().toLowerCase();
+    if (isCorrect) {
+      this.playTone(523.25, 'sine', 0.15); // C5 Chirp
+    } else {
+      this.playTone(220, 'triangle', 0.2); // A3 Boop
+    }
   }
 
   isOptionSelected(opt: string): boolean {
     const currentQ = this.questions[this.currentIdx];
     return this.selectedAnswers[currentQ.id] === opt;
+  }
+
+  hasAnswered(qId: string): boolean {
+    return !!this.selectedAnswers[qId];
+  }
+
+  get answeredCount(): number {
+    return Object.keys(this.selectedAnswers).length;
   }
 
   goNext(): void {
